@@ -963,7 +963,7 @@ function Library.CreateWindow(config)
 
         local selected = opts.Default or options[1] or ""
 
-        -- Closed box: darker pill (matches a compact "select" style)
+        -- Closed box: muted/"disabled" pill style, chevron stays as a static left arrow
         local Box = Instance.new("TextButton")
         Box.Size = UDim2.fromOffset(BOX_W, 30)
         Box.Position = UDim2.new(1, -(BOX_W + 13), 0.5, -15)
@@ -972,10 +972,11 @@ function Library.CreateWindow(config)
         Box.ZIndex = 3
         Box.Parent = Card
         Round(Box, 8)
-        Bind(Box, "BackgroundColor3", function() return Theme.Background end)
+        Bind(Box, "BackgroundColor3", function() return Theme.Tile end)
 
         local BoxStroke = Instance.new("UIStroke")
         BoxStroke.Thickness = 1
+        BoxStroke.Transparency = 0.5
         BoxStroke.Parent = Box
         Bind(BoxStroke, "Color", function() return Theme.Line end)
 
@@ -1000,8 +1001,8 @@ function Library.CreateWindow(config)
         Chevron.FontFace = F_Bold
         Chevron.TextSize = 11
         Chevron.ZIndex = 4
-        Chevron.Text = "<" -- rotated 90 = points down when closed
-        Chevron.Rotation = 90
+        Chevron.Text = "<" -- static left-pointing arrow, matches the reference pill
+        Chevron.Rotation = 0
         Chevron.Parent = Box
         Bind(Chevron, "TextColor3", function() return Theme.SubText end)
 
@@ -1048,33 +1049,31 @@ function Library.CreateWindow(config)
             Tween(ListHolder, 0.15, { Size = UDim2.fromOffset(BOX_W, 0) }).Completed:Connect(function()
                 if not open then ListHolder.Visible = false end
             end)
-            Tween(Chevron, 0.15, { Rotation = 90 })
         end
 
         local function openList()
             open = true
 
-            -- Anchor to the Box itself: open directly below it, right-aligned to its edge.
-            -- Flip upward if there isn't enough vertical room below.
+            -- Anchor to the whole UI window (Main), not the individual card: the flyout
+            -- opens flush against the window's right edge, top-aligned with this dropdown's
+            -- own card. Flips to the left edge if there isn't room on the right.
             local targetH = #options * ROW_H + 12
-            local screenH = ScreenGui.AbsoluteSize.Y
-            local boxPos = Box.AbsolutePosition
-            local boxSize = Box.AbsoluteSize
+            local screenW = ScreenGui.AbsoluteSize.X
+            local mainRight = Main.AbsolutePosition.X + Main.AbsoluteSize.X
+            local mainLeft = Main.AbsolutePosition.X
+            local y = Card.AbsolutePosition.Y
 
-            local x = boxPos.X + boxSize.X - BOX_W -- right-align flyout with the box
-            local y
-            local openUpward = (boxPos.Y + boxSize.Y + 8 + targetH) > screenH
-            if openUpward then
-                y = boxPos.Y - targetH - 8
+            local x
+            if mainRight + BOX_W <= screenW then
+                x = mainRight -- starts exactly at the UI's right edge
             else
-                y = boxPos.Y + boxSize.Y + 8
+                x = mainLeft - BOX_W
             end
 
             ListHolder.Position = UDim2.fromOffset(x, y)
             ListHolder.Visible = true
             Backdrop.Visible = true
             Tween(ListHolder, 0.18, { Size = UDim2.fromOffset(BOX_W, targetH) }, Enum.EasingStyle.Quint)
-            Tween(Chevron, 0.15, { Rotation = openUpward and 270 or 90 })
         end
 
         local optionButtons = {}
@@ -1121,7 +1120,7 @@ function Library.CreateWindow(config)
         end)
         Backdrop.MouseButton1Click:Connect(closeList)
         Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.CardHover }) end)
-        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.Background }) end)
+        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.Tile }) end)
 
         local control = { Instance = Card }
         function control:Set(v) choose(v, true) end
