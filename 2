@@ -963,7 +963,7 @@ function Library.CreateWindow(config)
 
         local selected = opts.Default or options[1] or ""
 
-        -- Closed box: blue accent pill (matches the title pill's blue tone)
+        -- Closed box: solid blue fill (Theme.SelectedBG), matches the requested swatch
         local Box = Instance.new("TextButton")
         Box.Size = UDim2.fromOffset(BOX_W, 30)
         Box.Position = UDim2.new(1, -(BOX_W + 13), 0.5, -15)
@@ -972,13 +972,7 @@ function Library.CreateWindow(config)
         Box.ZIndex = 3
         Box.Parent = Card
         Round(Box, 8)
-        Bind(Box, "BackgroundColor3", function() return Theme.PillBG end)
-
-        local BoxStroke = Instance.new("UIStroke")
-        BoxStroke.Thickness = 1
-        BoxStroke.Transparency = 0.5
-        BoxStroke.Parent = Box
-        Bind(BoxStroke, "Color", function() return Theme.Accent end)
+        Bind(Box, "BackgroundColor3", function() return Theme.SelectedBG end)
 
         local BoxLabel = Instance.new("TextLabel")
         BoxLabel.BackgroundTransparency = 1
@@ -991,7 +985,7 @@ function Library.CreateWindow(config)
         BoxLabel.ZIndex = 4
         BoxLabel.Text = tostring(selected)
         BoxLabel.Parent = Box
-        Bind(BoxLabel, "TextColor3", function() return Theme.PillText end)
+        Bind(BoxLabel, "TextColor3", function() return Theme.Text end)
 
         local Chevron = Instance.new("TextLabel")
         Chevron.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1004,7 +998,7 @@ function Library.CreateWindow(config)
         Chevron.Text = "<" -- static left-pointing arrow, matches the reference pill
         Chevron.Rotation = 0
         Chevron.Parent = Box
-        Bind(Chevron, "TextColor3", function() return Theme.PillText end)
+        Bind(Chevron, "TextColor3", function() return Theme.Text end)
 
         -- Backdrop: full-screen invisible button, closes the list on outside click
         local Backdrop = Instance.new("TextButton")
@@ -1024,10 +1018,11 @@ function Library.CreateWindow(config)
         ListHolder.Visible = false
         ListHolder.Parent = ScreenGui
         Round(ListHolder, 10)
-        Bind(ListHolder, "BackgroundColor3", function() return Theme.Card end)
+        Bind(ListHolder, "BackgroundColor3", function() return Theme.SelectedBG end)
 
         local ListStroke = Instance.new("UIStroke")
         ListStroke.Thickness = 1
+        ListStroke.Transparency = 1
         ListStroke.Parent = ListHolder
         Bind(ListStroke, "Color", function() return Theme.Line end)
 
@@ -1103,7 +1098,7 @@ function Library.CreateWindow(config)
                 Bind(OptBtn, "TextColor3", function() return Theme.Text end)
 
                 OptBtn.MouseEnter:Connect(function()
-                    Tween(OptBtn, 0.1, { BackgroundTransparency = 0, BackgroundColor3 = Theme.CardHover })
+                    Tween(OptBtn, 0.1, { BackgroundTransparency = 0, BackgroundColor3 = Theme.SelectedTile })
                 end)
                 OptBtn.MouseLeave:Connect(function()
                     Tween(OptBtn, 0.1, { BackgroundTransparency = 1 })
@@ -1119,8 +1114,8 @@ function Library.CreateWindow(config)
             if open then closeList() else openList() end
         end)
         Backdrop.MouseButton1Click:Connect(closeList)
-        Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.SelectedBG }) end)
-        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.PillBG }) end)
+        Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.SelectedTile }) end)
+        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.SelectedBG }) end)
 
         local control = { Instance = Card }
         function control:Set(v) choose(v, true) end
