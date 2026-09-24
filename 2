@@ -1018,11 +1018,11 @@ function Library.CreateWindow(config)
         ListHolder.Visible = false
         ListHolder.Parent = ScreenGui
         Round(ListHolder, 10)
-        Bind(ListHolder, "BackgroundColor3", function() return Theme.SelectedBG end)
+        Bind(ListHolder, "BackgroundColor3", function() return Theme.Background end)
 
         local ListStroke = Instance.new("UIStroke")
         ListStroke.Thickness = 1
-        ListStroke.Transparency = 1
+        ListStroke.Transparency = 0
         ListStroke.Parent = ListHolder
         Bind(ListStroke, "Color", function() return Theme.Line end)
 
