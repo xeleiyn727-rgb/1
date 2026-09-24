@@ -957,13 +957,13 @@ function Library.CreateWindow(config)
         local options = opts.Options or {}
         local callback = opts.Callback
         local BOX_W = 130
-        local LIST_W = 160
         local ROW_H = 42
 
         local Card = MakeCard(page, tabName, order, opts.Title, opts.Description, CARD_H, BOX_W + 26)
 
         local selected = opts.Default or options[1] or ""
 
+        -- Closed box: darker pill (matches a compact "select" style)
         local Box = Instance.new("TextButton")
         Box.Size = UDim2.fromOffset(BOX_W, 30)
         Box.Position = UDim2.new(1, -(BOX_W + 13), 0.5, -15)
@@ -972,7 +972,12 @@ function Library.CreateWindow(config)
         Box.ZIndex = 3
         Box.Parent = Card
         Round(Box, 8)
-        Bind(Box, "BackgroundColor3", function() return Theme.Tile end)
+        Bind(Box, "BackgroundColor3", function() return Theme.Background end)
+
+        local BoxStroke = Instance.new("UIStroke")
+        BoxStroke.Thickness = 1
+        BoxStroke.Parent = Box
+        Bind(BoxStroke, "Color", function() return Theme.Line end)
 
         local BoxLabel = Instance.new("TextLabel")
         BoxLabel.BackgroundTransparency = 1
@@ -991,12 +996,12 @@ function Library.CreateWindow(config)
         Chevron.AnchorPoint = Vector2.new(0.5, 0.5)
         Chevron.BackgroundTransparency = 1
         Chevron.Size = UDim2.fromOffset(20, 20)
-        Chevron.Position = UDim2.new(1, -18, 0.5, 0)
+        Chevron.Position = UDim2.new(1, -16, 0.5, 0)
         Chevron.FontFace = F_Bold
-        Chevron.TextSize = 12
+        Chevron.TextSize = 11
         Chevron.ZIndex = 4
-        Chevron.Text = ">"
-        Chevron.Rotation = 0
+        Chevron.Text = "<" -- rotated 90 = points down when closed
+        Chevron.Rotation = 90
         Chevron.Parent = Box
         Bind(Chevron, "TextColor3", function() return Theme.SubText end)
 
@@ -1009,14 +1014,15 @@ function Library.CreateWindow(config)
         Backdrop.Visible = false
         Backdrop.Parent = ScreenGui
 
-        -- Flyout list: top-level so it can extend past the window without being clipped
+        -- Flyout list: top-level so it can extend past the window without being clipped.
+        -- Sized to match the Box's own width, and anchored to the Box itself (not the window edge).
         local ListHolder = Instance.new("Frame")
-        ListHolder.Size = UDim2.fromOffset(LIST_W, 0)
+        ListHolder.Size = UDim2.fromOffset(BOX_W, 0)
         ListHolder.ClipsDescendants = true
         ListHolder.ZIndex = 91
         ListHolder.Visible = false
         ListHolder.Parent = ScreenGui
-        Round(ListHolder, 12)
+        Round(ListHolder, 10)
         Bind(ListHolder, "BackgroundColor3", function() return Theme.Card end)
 
         local ListStroke = Instance.new("UIStroke")
@@ -1039,34 +1045,36 @@ function Library.CreateWindow(config)
         local function closeList()
             open = false
             Backdrop.Visible = false
-            Tween(ListHolder, 0.15, { Size = UDim2.fromOffset(LIST_W, 0) }).Completed:Connect(function()
+            Tween(ListHolder, 0.15, { Size = UDim2.fromOffset(BOX_W, 0) }).Completed:Connect(function()
                 if not open then ListHolder.Visible = false end
             end)
-            Tween(Chevron, 0.15, { Rotation = 0 })
+            Tween(Chevron, 0.15, { Rotation = 90 })
         end
+
         local function openList()
             open = true
 
-            -- position the flyout just outside the right edge of the window,
-            -- top-aligned with this card; flip to the left edge if there's no room
+            -- Anchor to the Box itself: open directly below it, right-aligned to its edge.
+            -- Flip upward if there isn't enough vertical room below.
             local targetH = #options * ROW_H + 12
-            local screenW = ScreenGui.AbsoluteSize.X
-            local mainRight = Main.AbsolutePosition.X + Main.AbsoluteSize.X
-            local mainLeft = Main.AbsolutePosition.X
-            local y = Card.AbsolutePosition.Y
+            local screenH = ScreenGui.AbsoluteSize.Y
+            local boxPos = Box.AbsolutePosition
+            local boxSize = Box.AbsoluteSize
 
-            local x
-            if mainRight + 12 + LIST_W <= screenW then
-                x = mainRight + 12
+            local x = boxPos.X + boxSize.X - BOX_W -- right-align flyout with the box
+            local y
+            local openUpward = (boxPos.Y + boxSize.Y + 8 + targetH) > screenH
+            if openUpward then
+                y = boxPos.Y - targetH - 8
             else
-                x = mainLeft - 12 - LIST_W
+                y = boxPos.Y + boxSize.Y + 8
             end
 
             ListHolder.Position = UDim2.fromOffset(x, y)
             ListHolder.Visible = true
             Backdrop.Visible = true
-            Tween(ListHolder, 0.18, { Size = UDim2.fromOffset(LIST_W, targetH) }, Enum.EasingStyle.Quint)
-            Tween(Chevron, 0.15, { Rotation = 90 })
+            Tween(ListHolder, 0.18, { Size = UDim2.fromOffset(BOX_W, targetH) }, Enum.EasingStyle.Quint)
+            Tween(Chevron, 0.15, { Rotation = openUpward and 270 or 90 })
         end
 
         local optionButtons = {}
@@ -1113,7 +1121,7 @@ function Library.CreateWindow(config)
         end)
         Backdrop.MouseButton1Click:Connect(closeList)
         Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.CardHover }) end)
-        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.Tile }) end)
+        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.Background }) end)
 
         local control = { Instance = Card }
         function control:Set(v) choose(v, true) end
