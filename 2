@@ -963,7 +963,7 @@ function Library.CreateWindow(config)
 
         local selected = opts.Default or options[1] or ""
 
-        -- Closed box: muted/"disabled" pill style, chevron stays as a static left arrow
+        -- Closed box: blue accent pill (matches the title pill's blue tone)
         local Box = Instance.new("TextButton")
         Box.Size = UDim2.fromOffset(BOX_W, 30)
         Box.Position = UDim2.new(1, -(BOX_W + 13), 0.5, -15)
@@ -972,13 +972,13 @@ function Library.CreateWindow(config)
         Box.ZIndex = 3
         Box.Parent = Card
         Round(Box, 8)
-        Bind(Box, "BackgroundColor3", function() return Theme.Tile end)
+        Bind(Box, "BackgroundColor3", function() return Theme.PillBG end)
 
         local BoxStroke = Instance.new("UIStroke")
         BoxStroke.Thickness = 1
         BoxStroke.Transparency = 0.5
         BoxStroke.Parent = Box
-        Bind(BoxStroke, "Color", function() return Theme.Line end)
+        Bind(BoxStroke, "Color", function() return Theme.Accent end)
 
         local BoxLabel = Instance.new("TextLabel")
         BoxLabel.BackgroundTransparency = 1
@@ -991,7 +991,7 @@ function Library.CreateWindow(config)
         BoxLabel.ZIndex = 4
         BoxLabel.Text = tostring(selected)
         BoxLabel.Parent = Box
-        Bind(BoxLabel, "TextColor3", function() return Theme.SubText end)
+        Bind(BoxLabel, "TextColor3", function() return Theme.PillText end)
 
         local Chevron = Instance.new("TextLabel")
         Chevron.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1004,7 +1004,7 @@ function Library.CreateWindow(config)
         Chevron.Text = "<" -- static left-pointing arrow, matches the reference pill
         Chevron.Rotation = 0
         Chevron.Parent = Box
-        Bind(Chevron, "TextColor3", function() return Theme.SubText end)
+        Bind(Chevron, "TextColor3", function() return Theme.PillText end)
 
         -- Backdrop: full-screen invisible button, closes the list on outside click
         local Backdrop = Instance.new("TextButton")
@@ -1119,8 +1119,8 @@ function Library.CreateWindow(config)
             if open then closeList() else openList() end
         end)
         Backdrop.MouseButton1Click:Connect(closeList)
-        Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.CardHover }) end)
-        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.Tile }) end)
+        Box.MouseEnter:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.SelectedBG }) end)
+        Box.MouseLeave:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Theme.PillBG }) end)
 
         local control = { Instance = Card }
         function control:Set(v) choose(v, true) end
